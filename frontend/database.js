@@ -25,6 +25,7 @@ let attendanceSchema = new mongoose.Schema({
   links: [
     {
       link: { type: String },
+      day: {type : String},
       email: { type: String },
       subject: { type: String },
       questions: [

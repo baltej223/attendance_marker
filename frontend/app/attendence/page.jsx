@@ -10,7 +10,7 @@ const Attendenceform = ({className}) => {
     e.preventDefault();
     let link = linkRef.current.value;
     let time = timeRef.current.value; 
-    let req = {link:link, time:time, cookie:document.cookie, questions:questions};
+    let req = {link:link, time:time, cookie:document.cookie, questions:questions, day};
 
     const response = await fetch('/api/submit', {
       method: 'POST',
@@ -18,7 +18,7 @@ const Attendenceform = ({className}) => {
       body: JSON.stringify(req),
     });   
     let jsonRes = await response.text();
-    // alert(jsonRes._status);
+    alert(JSON.parse(jsonRes)._status);
     console.log(jsonRes);
   }
 
@@ -41,6 +41,16 @@ useEffect(()=>{
 console.log(JSON.stringify(questions));
 },[questions]);
 
+const dayMap = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+const [day, setDay] = useState(null); // will store 0–6
     return(
     <>
     <div className={`w-full flex justify-center  items-center ${className}`}>
@@ -68,7 +78,26 @@ console.log(JSON.stringify(questions));
           className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-100 focus:border-indigo-300"
         />
       </div>
+      <div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Which day?
+  </label>
 
+      <div className="space-y-2">
+        {Object.entries(dayMap).map(([name, value]) => (
+          <label key={name} className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="day"
+              value={value}
+              onChange={() => setDay(value)}
+              checked={day === value}
+            />
+            {name.charAt(0).toUpperCase() + name.slice(1)}
+          </label>
+        ))}
+      </div>
+    </div>
       {
       questions.map((question,index)=>{
         return (

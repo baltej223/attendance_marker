@@ -3,7 +3,6 @@ import { connectDB, User, UserData, attendance } from '@/database.js';
 
 await connectDB();
 
-
 let _1 = await attendance.findOne({time:"8:00"}).exec();
 let _2 = await attendance.findOne({time:"8:50"}).exec();
 let _3 = await attendance.findOne({time:"9:40"}).exec();
@@ -33,21 +32,25 @@ export async function POST(req) {
 
   const re = await req.json();
   console.log("received request:", re);
-  if (re.cookie && re.link && re.time && re.questions){
+  if (re.cookie && re.link && re.time && re.questions && re.day){
 
     let prevQuestions = await attendance.findOne({time:re.time});
     if (!prevQuestions){
       // Here create a new entry for the requested time.
-      prevQuestions =  new attendance({
+      new attendance({
         time: re.time,
         links:[]
       }).save();
-
+       prevQuestions = await attendance.findOne({time:re.time});
       // return NextResponse.json({error:"TimeNotSupported",_status:'Unsuccessful'});
     }
+   
+    let day = re.day ; // 0, 1, 2,
+    let day_arr = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     let res = await attendance.updateOne({time:re.time},{
       links: [...prevQuestions.links, {
         link:re.link,
+        day: day_arr[day],
         email:re.cookie,
         questions:[...re.questions]
     }],

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { connectDB, User } from '@/database.js';
 import { cookies } from 'next/headers';
+import { connectDB, User, attendance } from '@/database.js';
+
 
 export async function POST(req) {
 
