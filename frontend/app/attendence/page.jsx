@@ -1,45 +1,7 @@
 "use client";
-import React from "react";
-import { createPortal } from "react-dom";
-import  { useState,useRef,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/comps/navbar";
-import { redirect } from 'next/navigation'
-
-const Attendenceform = ({className}) => {
-  const  handleSubmit = async (e) => {
-    e.preventDefault();
-    let link = linkRef.current.value;
-    let time = timeRef.current.value; 
-    let req = {link:link, time:time, cookie:document.cookie, questions:questions, day};
-
-    const response = await fetch('/api/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
-    });   
-    let jsonRes = await response.text();
-    alert(JSON.parse(jsonRes)._status);
-    console.log(jsonRes);
-  }
-
-
-  let linkRef = useRef("");
-  let timeRef = useRef("");
-  
-  let questionRefs = useRef([]);
-  let [questions, setQuestions] = useState(
-    [
-      {
-        index:0,
-        question:"", 
-        answer:""
-      }
-    ]
-  ); 
-
-useEffect(()=>{
-console.log(JSON.stringify(questions));
-},[questions]);
+import { redirect } from "next/navigation";
 
 const dayMap = {
   sunday: 0,
@@ -50,159 +12,147 @@ const dayMap = {
   friday: 5,
   saturday: 6,
 };
-const [day, setDay] = useState(null); // will store 0–6
-    return(
-    <>
-    <div className={`w-full flex justify-center  items-center ${className}`}>
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md w-[400px]">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Submit a Link</h2>
-      <div className="mb-4">
-        <label htmlFor="link" className="block text-sm font-medium text-gray-700 mb-2">
-          Enter your link:
-        </label>
-        <input
-          placeholder="https://example.com"
-          ref={linkRef}
-          required
-          className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-100 focus:border-indigo-300"
-        />
-      </div>
 
-      <div className="mb-4">
-        <label htmlFor="link" className="block text-sm font-medium text-gray-700 mb-2">
-          Enter time:
-        </label>
-        <input
-          required
-          ref={timeRef}
-          className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-100 focus:border-indigo-300"
-        />
-      </div>
-      <div className="mb-4">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Which day?
-  </label>
+const AttendanceForm = ({ className }) => {
+  const [link, setLink] = useState("");
+  const [time, setTime] = useState("");
+  const [day, setDay] = useState(null);
 
-      <div className="space-y-2">
-        {Object.entries(dayMap).map(([name, value]) => (
-          <label key={name} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="day"
-              value={value}
-              onChange={() => setDay(value)}
-              checked={day === value}
-            />
-            {name.charAt(0).toUpperCase() + name.slice(1)}
-          </label>
-        ))}
-      </div>
-    </div>
-      {
-      questions.map((question,index)=>{
-        return (
-        <div className="mb-4" key={index} datakey={question.index}>
-        <label htmlFor="link" className="block text-sm font-medium text-gray-700 mb-2">
-          Question
-        </label>
-        <input
-        type="text"
-          required
-          defaultValue={question.question}
+  const [questions, setQuestions] = useState([
+    { id: crypto.randomUUID(), question: "", answer: "" },
+  ]);
 
-          onChange={(e)=>{
-            
-            setQuestions((_questions)=>{
-              let prevQs = _questions.slice(0,_questions.length-1);
-              return [...prevQs, {
-                index:_questions.length,
-                question:e.target.value,
-                 answer:_questions[_questions.length-1].answer
-              }]
-              
-            });
-          }}
-          
+  const handleQuestionChange = (id, field, value) => {
+    setQuestions(qs =>
+      qs.map(q =>
+        q.id === id ? { ...q, [field]: value } : q
+      )
+    );
+  };
 
-          className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-100 focus:border-indigo-300"
-        />
-        <label htmlFor="link" className="block text-sm font-medium text-gray-700 mb-2">
-          Answer
-        </label>
-        <input
-          type="text"
-          required
-          defaultValue={question.answer}
-          
-          onChange={(e)=>{
-            setQuestions((_questions)=>{
+  const addQuestion = () => {
+    setQuestions(qs => [
+      ...qs,
+      { id: crypto.randomUUID(), question: "", answer: "" },
+    ]);
+  };
 
-              let prevQs = _questions.slice(0,_questions.length-1);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
+    const req = {
+      link,
+      time,
+      day,
+      cookie: document.cookie,
+      questions,
+    };
 
-              return [...prevQs, {
-                index:_questions.length,
-                question:_questions[_questions.length-1].question,
-                 answer:e.target.value
-              }]
-            });
-          }}
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
 
-          className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-100 focus:border-indigo-300"
-        />
-      </div>)
-      })
-      }
+    const json = await res.json();
+    alert(json._status);
+  };
 
-
-
-
-
-
-
-      <button type="Button" className="w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-colors duration-300"
-       onClick={()=>{
-          
-        setQuestions((prevQues)=>{
-          return [
-            ...prevQues, {
-            index:questions.length+1,
-            question:"",
-            answer:""
-          }]
-
-        }); 
-
-
-      }}>Add More questions</button>
-      <button
-        type="submit"
-        className="mt-7 w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-colors duration-300"
+  return (
+    <div className={`w-full flex justify-center ${className}`}>
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-md p-6 bg-white rounded-lg shadow-md w-[400px]"
       >
-        Submit
-      </button>
-    </form>
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Submit a Link
+        </h2>
+
+        {/* Link */}
+        <input
+          value={link}
+          onChange={e => setLink(e.target.value)}
+          placeholder="https://example.com"
+          required
+          className="w-full mb-4 px-3 py-2 border rounded"
+        />
+
+        {/* Time */}
+        <input
+          value={time}
+          onChange={e => setTime(e.target.value)}
+          required
+          className="w-full mb-4 px-3 py-2 border rounded"
+        />
+
+        {/* Day */}
+        <div className="mb-4 space-y-1">
+          {Object.entries(dayMap).map(([name, value]) => (
+            <label key={name} className="flex gap-2">
+              <input
+                type="radio"
+                checked={day === value}
+                onChange={() => setDay(value)}
+              />
+              {name}
+            </label>
+          ))}
+        </div>
+
+        {/* Questions */}
+        {questions.map(q => (
+          <div key={q.id} className="mb-4">
+            <input
+              value={q.question}
+              onChange={e =>
+                handleQuestionChange(q.id, "question", e.target.value)
+              }
+              placeholder="Question"
+              required
+              className="w-full mb-2 px-3 py-2 border rounded"
+            />
+            <input
+              value={q.answer}
+              onChange={e =>
+                handleQuestionChange(q.id, "answer", e.target.value)
+              }
+              placeholder="Answer"
+              required
+              className="w-full px-3 py-2 border rounded"
+            />
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={addQuestion}
+          className="w-full bg-gray-500 text-white py-2 rounded"
+        >
+          Add Question
+        </button>
+
+        <button
+          type="submit"
+          className="mt-4 w-full bg-gray-700 text-white py-2 rounded"
+        >
+          Submit
+        </button>
+      </form>
     </div>
+  );
+};
+
+function Home() {
+  useEffect(() => {
+    if (!document.cookie) redirect("/login");
+  }, []);
+
+  return (
+    <>
+      <Navbar />
+      <AttendanceForm />
     </>
   );
 }
 
-function Home() {
-  //redrections
-    useEffect(() => {
-      if (!document.cookie) {
-        // router.push("/login"); // Redirect to the login page or any other page
-        redirect(`/login`);
-      }
-    }, []);
-    //done
-
-  return (
-    <>
-    <Navbar/>
-    <Attendenceform />
-    </>
-  )
-  }
-
-  export default Home;
+export default Home;
