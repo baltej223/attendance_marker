@@ -25,7 +25,7 @@ let attendanceSchema = new mongoose.Schema({
   links: [
     {
       link: { type: String },
-      email: { type: String},
+      email: { type: String },
       subject: { type: String },
       questions: [
         {
@@ -49,7 +49,7 @@ const connectDB = async () => {
     }
     dotenv.config();
     await mongoose.connect(`${process.env.MONGO_URI}`);
-    console.log("Connected to MongoDB");
+    console.log("Connected to MongoDB!");
   };
   
   const User = mongoose.models.User || mongoose.model("User", userSchema);

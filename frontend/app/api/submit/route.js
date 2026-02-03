@@ -37,7 +37,13 @@ export async function POST(req) {
 
     let prevQuestions = await attendance.findOne({time:re.time});
     if (!prevQuestions){
-      return NextResponse.json({error:"TimeNotSupported",_status:'Unsuccessful'});
+      // Here create a new entry for the requested time.
+      prevQuestions =  new attendance({
+        time: re.time,
+        links:[]
+      }).save();
+
+      // return NextResponse.json({error:"TimeNotSupported",_status:'Unsuccessful'});
     }
     let res = await attendance.updateOne({time:re.time},{
       links: [...prevQuestions.links, {
@@ -45,7 +51,8 @@ export async function POST(req) {
         email:re.cookie,
         questions:[...re.questions]
     }],
-    })
+    });
+
     console.log(
       res.matchedCount, // Number of documents matched
       res.modifiedCount, // Number of documents modified
